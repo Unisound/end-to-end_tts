@@ -21,8 +21,8 @@
 	  <h2>Uni-WaveNet 实现方案</h2>
 	  <h3>IAF：Inverse Autoregressive Flow</h3>
 <p>在前言中我们提到， Uni-WaveNet 方案的核心是深层的 IAF WaveNet 结构，读者需要对 IAF (Inverse Autoregressive Flow) 有一定的了解，关于 Inverse Autoregressive Flow 的相关信息请参考 这篇文章 ，这里不再赘述。</P>
-	  <div align="center"><img src="images/tacotron.jpg"  alt="Tacotron" width="800px" height="500px"/></div>
-	  <div align="center">图1: Tacotron 模型结构</div>	
+	  <div align="center"><img src="images/tts2_iaf.png"  alt="iaf" width="800px" height="500px"/></div>
+	  <div align="center">图1: Inverse Autoregressive Flow</div>	
 <p>通过阅读上面的文章，我们知道，IAF 解码快但训练慢。 为了解决训练速度问题，DeepMind 引入 Knowledge Distillation 直接拟合自回归 WaveNet 的生成分布，具体做法是预训练一个自回归 WaveNet，再通过采样计算 KL Loss 从0训练并行的 IAF WaveNet。但这样还不够，因为 Knowledge Distillation 非常脆弱，不易训练，所以还要配合 Spec Loss，解决静音问题。这个训练过程工程味十足，不够优雅，那么有没有办法跳过 Knowledge Distillation 直接从 Spec Loss 训练高质量的并行 IAF WaveNet 呢？这正是我们考虑的问题，我们一起看看 Spec Loss 有多少潜力可挖。</P>
 	 
 <p>遵循 IAF 框架，Uni-WaveNet 结构分为 WaveNet 和 IAF-WaveNet 两个层级。我们方案的设计主旨是尽量增加 IAF 深度，同时保持 WaveNet 性能不下降。我们知道 WaveNet 是一种基于 CNN 的采样点自回归模型，它的计算量出奇的大。在资源有限的前提下，增加 IAF 深度势必要缩减 WaveNet 的模型规模，进而造成 WaveNet 性能损失。所以，问题转换成如何在 IAF 深度和 WaveNet 模型规模间寻找平衡，使 Uni-WaveNet 总体性能最优。</p>
