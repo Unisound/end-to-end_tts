@@ -31,10 +31,16 @@
 
 <p>WaveNet 的性能主要取决于感受野宽度，感受野宽度正比与参数量，例如 WaveNet1 中使用扩张卷积，卷积核宽度为2 ，扩张系数每层 x2，大大提高了参数效率； Parallel WaveNet ，将卷积核宽度扩大为3，同时保持扩张系数每层 x2 不变，进一步提高了参数效率。</P>
 <p>在我们的 WaveNet 方案中，卷积核宽度为 3，扩张系数每层 x3，参数效率比 Parallel WaveNet 更高。具体而言，7 层扩张卷积构成一层 IAF WaveNet ，7 层扩张卷积的扩张系数分别为  [1, 3, 9, 27, 81, 243, 729] ，没有 skip connections。读者可能会认为扩张系数增长过快会影响模型性能，但根据我们的试验结果，这种担心是多余。</P>
+	  <div align="center"><img src="images/tts2_uni_wn.png"  alt="tts2_uni_wn" width="800px" height="500px"/></div>
+	  <div align="center">图2: Uni-WaveNet 中的 WaveNet</div>	
+	  <div align="center"><img src="images/tts2_wn.png"  alt="tts2_wn" width="800px" height="500px"/></div>
+	  <div align="center">图3: 标准 WaveNet</div>	
 <p>为了更直观的对比，我们准备了图2和图3，分别代表 Uni-WaveNet 以及 WaveNet1，在 WaveNet1 中卷积核宽度为 2，扩张系数每层 x2， 每 10 层一组，共 3 组，组内扩张系数分别为  [1, 2, 4, 8, 16, 32, 64, 128, 256, 512] 。从图中我们可以看到，在网络层数相同的条件下，Uni-WaveNet 的感受野要大得多；或者反过来说，在感受野相当的条件下，Uni-WaveNet 的参数量更少，这使得我们有机会使用剩余的资源设计一种更深的 IAF 模型。</P>
 	  <h3>IAF WaveNet 配置 </h3>
 <p>我们设计了一种深层 IAF-WaveNet 架构，共 8 层，如图4。具体而言，IAF-WaveNet 包含 8层 WaveNet（记为 IAF1、IAF2...IAF8），每层 WaveNet 包含 7 层扩张卷积，卷积核宽度为 3，扩展系数分别为 [1, 3, 9, 27, 81, 243, 729]。每层 IAF WaveNet 输出的波形分别计算 Spec Loss，并且 Spec Loss 按照不同窗长分别计算，具体计算过程详见下两节。</P>
 <p>对比 DeepMind Parallel WaveNet ，DeepMind Parallel WaveNet 采用 4 层 IAF 共 60 层 网络，前 3 层 IAF 采用 10 层 WaveNet，第 4 层 IAF 采用 30 层 WaveNet，卷积核宽度为 3 ，扩张系数每层 x2。Uni-WaveNet 的参数量与其相当（略少），感受野相当（除了最后一层 IAF），IAF 层数增加了 1 倍。</P>
+	  <div align="center"><img src="images/tts2_wn.svg.png"  alt="tts2_wn.svg" width="800px" height="500px"/></div>
+	  <div align="center">图4: Uni-WaveNet 总体结构</div>	
 	  <h3>Spec 代价函数设计 </h3>
 
 <p>在这一节中我们简要讨论一下 Spec Loss 的设计。这是一个重要的问题，大家在尝试复现时必须小心设计 Spec Loss ，因为合成质量对 Spec Loss 十分敏感。总体来讲，组合窗长可以提高合成效果，短窗长减少抖动，长窗长提升音质。我们提出了一种 Spec loss 计算方式，就与听觉特性平衡频谱能量对 loss 计算的代价。进一步，我们引入相位信息，以增强听感和稳定训练。</P>
@@ -57,6 +63,10 @@
 <p>1. 从 Student model 采样送入 Teacher model 计算 MoL loss 。</P>
 <p>2. 从 Teacher model 采样送入 Student model 计算 Logistic 分布的 NLL 。</P>
 <p>下面两幅谱图图5和图6分别出自用 Spec Loss 训练的 Uni-WaveNet 以及 Spec Loss + Knowledge Distillation 训练的的 Uni-WaveNet。</P>
+	  <div align="center"><img src="images/tts2_spec_loss.png"  alt="tts2_spec_loss" width="800px" height="500px"/></div>
+	  <div align="center">图5: Uni-WaveNet Spec Loss</div>
+	  <div align="center"><img src="images/tts2_spec_kl_loss.png"  alt="tts2_spec_kl_loss" width="800px" height="500px"/></div>
+	  <div align="center">图6: Uni-WaveNet  Spec Loss + Knowledge Distillation</div>
 	  <h2>AB Test</h2>
 <p>下面我们给出对比几组对比 Samples 分别出自 LSTM 参数系统、Tacotron + Griffin-Lim、Tacotron + WaveNet、Tacotron + Uni-WaveNet，大家可以试听一下作为对比。</P>
 	  <h2>几个您可能关心的问题</h2>
