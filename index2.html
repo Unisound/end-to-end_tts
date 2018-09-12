@@ -31,7 +31,7 @@
 
 <p>WaveNet 的性能主要取决于感受野宽度，感受野宽度正比与参数量，例如 WaveNet1 中使用扩张卷积，卷积核宽度为2 ，扩张系数每层 x2，大大提高了参数效率； Parallel WaveNet ，将卷积核宽度扩大为3，同时保持扩张系数每层 x2 不变，进一步提高了参数效率。</P>
 <p>在我们的 WaveNet 方案中，卷积核宽度为 3，扩张系数每层 x3，参数效率比 Parallel WaveNet 更高。具体而言，7 层扩张卷积构成一层 IAF WaveNet ，7 层扩张卷积的扩张系数分别为  [1, 3, 9, 27, 81, 243, 729] ，没有 skip connections。读者可能会认为扩张系数增长过快会影响模型性能，但根据我们的试验结果，这种担心是多余。</P>
-	  <div align="center"><img src="images/tts2_uni_wn.png"  alt="tts2_uni_wn" width="800px" height="500px"/></div>
+	  <div align="center"><img src="images/tts2_wn.svg.png"  alt="tts2_wn.svg" width="800px" height="500px"/></div>
 	  <div align="center">图2: Uni-WaveNet 中的 WaveNet</div>	
 	  <div align="center"><img src="images/tts2_wn.png"  alt="tts2_wn" width="800px" height="500px"/></div>
 	  <div align="center">图3: 标准 WaveNet</div>	
@@ -39,7 +39,7 @@
 	  <h3>IAF WaveNet 配置 </h3>
 <p>我们设计了一种深层 IAF-WaveNet 架构，共 8 层，如图4。具体而言，IAF-WaveNet 包含 8层 WaveNet（记为 IAF1、IAF2...IAF8），每层 WaveNet 包含 7 层扩张卷积，卷积核宽度为 3，扩展系数分别为 [1, 3, 9, 27, 81, 243, 729]。每层 IAF WaveNet 输出的波形分别计算 Spec Loss，并且 Spec Loss 按照不同窗长分别计算，具体计算过程详见下两节。</P>
 <p>对比 DeepMind Parallel WaveNet ，DeepMind Parallel WaveNet 采用 4 层 IAF 共 60 层 网络，前 3 层 IAF 采用 10 层 WaveNet，第 4 层 IAF 采用 30 层 WaveNet，卷积核宽度为 3 ，扩张系数每层 x2。Uni-WaveNet 的参数量与其相当（略少），感受野相当（除了最后一层 IAF），IAF 层数增加了 1 倍。</P>
-	  <div align="center"><img src="images/tts2_wn.svg.png"  alt="tts2_wn.svg" width="800px" height="500px"/></div>
+	  <div align="center"><img src="images/tts2_uni_wn.png"  alt="tts2_uni_wn" width="800px" height="500px"/></div>
 	  <div align="center">图4: Uni-WaveNet 总体结构</div>	
 	  <h3>Spec 代价函数设计 </h3>
 
@@ -52,6 +52,26 @@
 	  <h3>IAF samples:</h3>
 
 <p>从上到下依次为，Uni-WaveNet IAF1 到 Uni-WaveNet IAF8，以及 Autoregressive WaveNet，您可以直观感受不同 IAF 层的波形生成质量变化。</P>
+ <table >
+        <tr><td>Uni-WaveNet IAF1</td>
+        <td><audio controls><source src="samples/ttts2_iaf0.mp3"></audio></td></tr>
+        <tr><td>Uni-WaveNet IAF2</td>
+        <td><audio controls><source src="samples/ttts2_iaf1.mp3"></audio></td></tr>
+        <tr><td>Uni-WaveNet IAF3</td>
+        <td><audio controls><source src="samples/ttts2_iaf2.mp3"></audio></td></tr>
+        <tr><td>Uni-WaveNet IAF4</td>
+        <td><audio controls><source src="samples/ttts2_iaf3.mp3"></audio></td></tr>
+        <tr><td>Uni-WaveNet IAF5</td>
+        <td><audio controls><source src="samples/ttts2_iaf4.mp3"></audio></td></tr>
+        <tr><td>Uni-WaveNet IAF6</td>
+        <td><audio controls><source src="samples/ttts2_iaf5.mp3"></audio></td></tr>
+        <tr><td>Uni-WaveNet IAF7</td>
+        <td><audio controls><source src="samples/ttts2_iaf6.mp3"></audio></td></tr>
+        <tr><td>Uni-WaveNet IAF8</td>
+        <td><audio controls><source src="samples/ttts2_iaf7.mp3"></audio></td></tr>		
+        <tr><td>Autoregressive WaveNet</td>
+        <td><audio controls><source src="samples/ttts2_baseline_AR_wavenet.mp3"></audio></td></tr>		
+      </table>
 	  <h2>Uni-WaveNet 方案扩展</h2>
 	  	  <h3>Train Uni-WaveNet with Knowledge Distillation</h3>
 <p>结论写在最前，我们复现了 DeepMind 的 Knowledge Distillation 方法，配合 Spec Loss，Student model 可以正确拟合 Teacher model 的输出分布。但是，在我们的系统配置中，增加 Knowledge Distillation 并没有进一步提高 Uni-WaveNet 的合成质量。不过，为了给大家分享这部分的经验，下面简要介绍一下我们在 Knowledge Distillation 的一些实验配置。</P>
@@ -69,6 +89,17 @@
 	  <div align="center">图6: Uni-WaveNet  Spec Loss + Knowledge Distillation</div>
 	  <h2>AB Test</h2>
 <p>下面我们给出对比几组对比 Samples 分别出自 LSTM 参数系统、Tacotron + Griffin-Lim、Tacotron + WaveNet、Tacotron + Uni-WaveNet，大家可以试听一下作为对比。</P>
+	<table >
+	    <tr><td align="center">LSTM 参数合成</td>
+		<td  align="center">Tacotron + Griffin-Lim</audio></td>
+		<td  align="center">Tacotron + WaveNet</audio></td>
+        <td  align="center">Tacotron + Uni-WaveNet</audio></td></tr>
+        <tr><td><audio controls><source src="samples/ttts2_baseline_parameter.mp3"></audio></td></tr>
+        <tr><td><audio controls><source src="samples/ttts2_baseline_Tacotron_GL.mp3"></audio></td></tr>
+		<tr><td><audio controls><source src="samples/ttts2_baseline_AR_wavenet.mp3"></audio></td></tr>
+		<tr><td><audio controls><source src="samples/ttts2_iaf7.mp3"></audio></td></tr>
+
+    </table>
 	  <h2>几个您可能关心的问题</h2>
 <p>关于 ClariNet：</P>
 <p>ClariNet 是一个很有意思的改进，用闭合形式计算 Knowledge Distillation，避免采样，简化了训练。我们确实进行了相关实验，在线性波形上 ClariNet 可以训练出高质量的波形，但在 μ-law 波形上 ClariNet 训练存在问题，主要是清音段波动大造成爆破音，我们分析原因是单高斯分布拟合能力有限。</P>
@@ -86,14 +117,6 @@
 
       <h3>Samples</h3>
 <p>下面的 Samples 是自回归 WaveNet 和 Parallel WaveNet 的对比。据我们所知，这是业界首次公开的中文 Parallel WaveNet 样例。</P>
-<table >
-        <tr><td class="Parallel WaveNet" id="Parallel_WaveNet">Parallel WaveNet</td></tr>
-	    <tr><td align="center">Autoregression WaveNet</td>
-        <td  align="center">Parallel WaveNet</audio></td></tr>
-        <tr><td><audio controls><source src="samples/wavenet-4.mp3"></audio></td>
-        <td><audio controls><source src="samples/4.mp3"></audio></td></tr>
-		<tr><td><audio controls><source src="samples/wavenet-6.mp3"></audio></td>
-        <td><audio controls><source src="samples/6.mp3"></audio></td></tr>
-      </table>
+
   </body>
 </html>
