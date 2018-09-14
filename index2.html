@@ -53,7 +53,8 @@
 
 <p>从上到下依次为，Uni-WaveNet IAF1 到 Uni-WaveNet IAF8，以及 Autoregressive WaveNet，您可以直观感受不同 IAF 层的波形生成质量变化。</P>
  <table >
-        <tr><td>Uni-WaveNet IAF1</td>
+        <tr><td class="Uni-WaveNet_IAF" id="Uni-WaveNet_IAF"></td></tr>
+		<tr><td>Uni-WaveNet IAF1</td>
         <td><audio controls><source src="samples/ttts2_iaf0.mp3"></audio></td></tr>
         <tr><td>Uni-WaveNet IAF2</td>
         <td><audio controls><source src="samples/ttts2_iaf1.mp3"></audio></td></tr>
@@ -90,6 +91,7 @@
 	  <h2>AB Test</h2>
 <p>下面我们给出对比几组对比 Samples 分别出自 LSTM 参数系统、Tacotron + Griffin-Lim、Tacotron + WaveNet、Tacotron + Uni-WaveNet，大家可以试听一下作为对比。</P>
 	<table >
+	    <tr><td class="ab_test" id="ab_test"></td></tr>
 	    <tr><td align="center">LSTM 参数合成</td>
 		<td  align="center">Tacotron + Griffin-Lim</audio></td>
 		<td  align="center">Tacotron + WaveNet</audio></td>
